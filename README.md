@@ -87,16 +87,17 @@ jupyter notebook Aurora_siger.ipynb
 
 Os dados sintéticos foram calibrados com base em referências reais de estações espaciais e veículos de lançamento:
 
-| Sensor | μ | σ | Unidade | Referência | Comentário |
+| Coluna | μ | σ | Unidade | Referência | Comentário |
 |--------|---|---|---------|------------|------------|
-| Temperatura interna | 22 | 1.5 | °C | ISS: 18–26°C, média 21–23°C | Ambiente pressurizado com controle térmico ativo |
-| Temperatura externa | 10 | 50 | °C | LEO: -65°C a +125°C | Variação extrema entre face solar e sombra da nave |
-| Integridade estrutural | — | — | 0/1 | Binário: 1 = íntegro, 0 = comprometido | Sensores binários de ruptura/deformação no casco |
-| Energia | 95 | 3 | % | ISS: 84–120 kW, baterias Li-ion de 4 kWh | Percentual de carga das baterias Li-ion |
-| Vibração | 0.3 | 0.1 | g | Pré-decolagem: ~0.1–0.5g | Vibrações residuais dos motores em pré-ignição |
-| Pressão dos tanques | 4.5 | 0.5 | atm | LOX/LH2 pump-fed: ~3.7–5.5 atm | Pressurização dos tanques criogênicos de LOX/LH2 |
+| `internal_temp` | 22 | 1.5 | °C | ISS: 18–26°C, avg 21–23°C | Ambiente pressurizado com controle térmico ativo |
+| `external_temp` | 10 | 8 | °C | LEO: -65°C a +125°C | Variação extrema entre face solar e sombra da nave |
+| `structural_integrity` | — | — | 0/1 | 1 = íntegro, 0 = falha | Bernoulli(1 - failure_prob): degrada com pressão alta |
+| `energy` | 98 | 2 | % | Carga pré-lançamento via GSE, Go/No-Go ≥95% | Normal(98,2) clipped [0,100] — baterias mantidas por GSE |
+| `vibration` | 0.3 | 0.1 | g | Pré-decolagem: ~0.1–0.5g | Vibrações residuais dos motores em pré-ignição |
+| `tank_pressure` | 305 | 15 | atm | LOX/LH2 pump-fed: 270–340 atm | Pressurização dos tanques criogênicos de LOX/LH2 |
+| `critical_modules` | — | — | 0/1 | 1 = ativo, 0 = inativo | Bernoulli(1 - failure_prob): degrada com pressão alta |
 
-### Fontes
+### Fontes — Telemetria
 
 - [ESA — Temperatures on the Space Station](https://www.esa.int/ESA_Multimedia/Images/2021/08/Temperatures_on_the_Space_Station)
 - [Sciencing — Temperature of Outer Space Close to Earth](https://www.sciencing.com/1921895/temperature-outer-space-close-earth/)
@@ -104,6 +105,94 @@ Os dados sintéticos foram calibrados com base em referências reais de estaçõ
 - [ScienceDirect — LOX Tank Pressurisation System](https://www.sciencedirect.com/science/article/abs/pii/S1359431119381049)
 - [NASA — Spacecraft Level Vibration Testing](https://ntrs.nasa.gov/api/citations/20150020490/downloads/20150020490.pdf)
 - [Wikipedia — ISS Electrical System](https://en.wikipedia.org/wiki/Electrical_system_of_the_International_Space_Station)
+
+---
+
+## Parâmetros energéticos
+
+Os parâmetros da análise energética (entregável 1.4) foram calibrados com base em sistemas reais de potência de espaçonaves e veículos de lançamento:
+
+### Capacidade total das baterias (kWh)
+
+| Sistema | Capacidade | Tipo de bateria |
+|---------|------------|-----------------|
+| Crew Dragon (SpaceX) | ~10–20 kWh | Li-ion (sem painéis solares durante lançamento) |
+| Orion (NASA) | ~11 kWh | Li-ion (backup + picos, complementado por painéis solares) |
+| Soyuz | ~5–8 kWh | Prata-zinco (módulo de descida) |
+| Estágio superior Falcon 9 | ~3–5 kWh | Li-ion |
+| ISS (referência) | ~600 kWh | Li-ion (48 unidades, upgrade 2017–2021) |
+
+**Valor na simulação:** 18 kWh (sistema combinado cápsula + estágio superior)
+
+### Carga pré-lançamento e limiar Go/No-Go
+
+- Baterias mantidas a **100%** via Ground Support Equipment (GSE) até desconexão do umbilical (T-2 a T-5 min)
+- Carga no momento da desconexão: **~98–100%**
+- Limiar mínimo Go/No-Go: **≥95%** (missões tripuladas: ≥97%)
+
+### Consumo elétrico durante a fase de lançamento
+
+| Subsistema | Consumo (W) | Notas |
+|------------|-------------|-------|
+| Computadores de bordo (redundantes) | 200–600 | Tripla redundância (ex: Falcon 9 usa 3× flight computers) |
+| Navegação e controle (GNC) | 100–300 | IMUs, star trackers, receptores GPS |
+| Comunicação e telemetria | 100–400 | Downlink S-band/C-band, range safety |
+| Atuadores de válvulas e controle de motor | 200–800 | Pico durante eventos de staging |
+| Instrumentação e sensores | 50–200 | Pressão, temperatura, vibração |
+| Circuitos pirotécnicos | 50–200 (pico) | Separação de estágios, ejeção de carenagem |
+| Controle ambiental (tripulado) | 200–500 | Ventiladores, bombas de refrigeração |
+| **Total (veículo tripulado)** | **~1.5–3.0 kW** | |
+
+- Duração da fase de lançamento: ~8–10 min até inserção orbital
+- Energia elétrica total consumida: **~0.30 kWh**
+- Picos de potência (staging): **3–5 kW** por alguns segundos
+- Barramento padrão: **28 VDC** (MIL-STD-704)
+
+### Consumo orbital (pós-lançamento)
+
+Em órbita, atuadores de motor e pirotécnicos estão inativos, reduzindo o consumo para **~0.8–1.5 kW** (~50–65% do lançamento):
+
+| Subsistema | Lançamento (W) | Órbita (W) | Notas |
+|------------|---------------|------------|-------|
+| Computadores de bordo | 200–600 | 200–400 | Mesma redundância, menor carga computacional |
+| GNC | 100–300 | 50–150 | Modo cruzeiro, sem correções agressivas |
+| Comunicação/telemetria | 100–400 | 100–300 | Downlink contínuo a menor taxa |
+| Atuadores/controle de motor | 200–800 | **0** | Motores desligados |
+| Pirotécnicos | 50–200 | **0** | Já utilizados no staging |
+| Controle ambiental | 200–500 | 200–500 | Mantém-se (suporte de vida) |
+| Gerenciamento térmico | — | 100–300 | Aumenta (ciclos sol/sombra ~90 min) |
+
+**Valor na simulação:** 1.2 kW (Crew Dragon free-flight: ~1.0–1.2 kW)
+
+### Cálculo de autonomia
+
+```
+energia_útil       = capacidade × carga% × (1 - perdas%)     → 18 × 1.0 × 0.86 = 15.48 kWh
+energia_lançamento = consumo_kw × duração_min / 60            → 2.0 × 9/60       = 0.30 kWh
+autonomia_orbital  = (energia_útil - energia_lançamento) / consumo_orbital
+                   = (15.48 - 0.30) / 1.2 = 12.65 horas
+```
+
+### Perdas energéticas
+
+| Tipo de perda | % típica | Descrição |
+|---------------|----------|-----------|
+| Resistência interna da bateria | 2–5% | Perdas I²R, maiores em altas taxas de descarga |
+| Conversão DC-DC | 3–8% | Conversores para barramentos secundários (5V, 12V) com 92–97% de eficiência |
+| Resistência de cabeamento | 1–3% | Chicotes elétricos de 100+ metros em alumínio/cobre |
+| Gerenciamento térmico | 2–5% | Aquecedores de bateria e sistemas de refrigeração |
+| Condicionamento de potência | 1–2% | Reguladores de tensão, filtros, circuitos de proteção |
+| **Total combinado** | **~8–18%** | **Valor na simulação: 14%** |
+
+### Fontes — Energia
+
+- Wertz, J. R., Everett, D. F. & Puschell, J. J. — *Space Mission Engineering: The New SMAD* (Cap. 11 — Power Systems)
+- Patel, M. R. — *Spacecraft Power Systems* (CRC Press)
+- [NASA — ISS Li-ion Battery Upgrade Fact Sheet](https://www.nasa.gov/mission_pages/station/research/benefits/iss-battery-upgrade)
+- [SpaceX — Crew Dragon Press Kit (Demo-2)](https://www.spacex.com/launches/)
+- [MIL-STD-704F — Aircraft/Spacecraft Electrical Power Characteristics](https://quicksearch.dla.mil/qsDocDetails.aspx?ident_number=36237)
+- [ESA — Soyuz Crew Training Manual (Electrical Systems)](https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration/International_Space_Station)
+- [ULA — Atlas V / Centaur User's Guide](https://www.ulalaunch.com/docs/default-source/rockets/atlasv-usersguide2010a.pdf)
 
 ---
 
