@@ -1,0 +1,56 @@
+AURORA SIGER - Andamento do Projeto (24/03/2026)
+
+Fala galera! Segue resumo do que foi feito e a proposta pro próximo passo.
+
+
+O QUE JÁ ESTÁ PRONTO
+
+1.1 - Organização da telemetria
+- Dataset com 485 leituras e 7 variáveis (internal_temp, external_temp, structural_integrity, energy, vibration, tank_pressure, critical_modules)
+- Todos os dados calibrados com referências reais (ISS, Crew Dragon, Orion, etc.)
+- EDA completa: heatmap de correlação + gráficos de distribuição
+
+1.2 - Algoritmo de verificação
+- Pseudocódigo em estilo Portugol
+- Fluxograma gerado com Graphviz
+- 7 faixas seguras definidas (temperatura, energia >= 95%, pressão 270-340 atm, etc.)
+
+1.3 - Script em Python
+- Função check_launch_readiness() que recebe uma leitura e diz se é "PRONTO PARA DECOLAR" ou "DECOLAGEM ABORTADA"
+- Usa um loop sobre as faixas seguras, sem repetir código
+
+1.4 - Análise energética
+- Parâmetros baseados em dados reais (SpaceX, NASA, MIL-STD-704F)
+- Capacidade: 18 kWh, perdas: 14%, consumo orbital: 1.2 kW
+- Função calculate_autonomy() -> resultado: 12.65 horas de autonomia em órbita
+- Fontes todas documentadas no README
+
+1.6 - Reflexão crítica
+- Texto "Quem decide quando a máquina decide?" - já estava pronto
+
+
+CONVENÇÕES
+
+- Código (variáveis, funções, colunas): em inglês
+- Comentários, prints e textos: em português
+- Tudo padronizado e consistente
+
+
+O QUE FALTA
+
+- 1.5 - Análise assistida por IA (proposta abaixo)
+- Gerar dados de anomalia e treinar os modelos ML
+- Função statistical_analysis() (stub vazio)
+
+
+PROPOSTA PARA A 1.5
+
+Combinar duas abordagens:
+
+Parte 1 - Análise por regras: uma função que percorre TODAS as leituras e gera relatório automatizado (quantas fora da faixa, variável mais problemática, classificação de risco)
+
+Parte 2 - Isolation Forest (ML): treinar nos dados normais, gerar anomalias, e ver se o modelo detecta. Já temos o import pronto no notebook.
+
+O ponto forte é comparar as duas: regras pegam o que conhecemos, ML pode encontrar padrões ocultos. Mostrar onde concordam e discordam é o que diferencia o trabalho.
+
+O que acham?!
