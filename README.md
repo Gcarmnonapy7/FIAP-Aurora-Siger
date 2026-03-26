@@ -11,10 +11,17 @@ Sistema Inteligente de Gerenciamento de Riscos para telemetria de decolagem espa
 O Aurora SIGER simula o monitoramento de sensores de uma estação espacial antes da decolagem. A partir de dados de telemetria — temperatura, integridade estrutural, energia, pressão e vibração — o sistema:
 
 1. Organiza e descreve os dados de telemetria
-2. Aplica um algoritmo de verificação pré-decolagem (**"PRONTO PARA DECOLAR"** ou **"DECOLAGEM ABORTADA"**)
-3. Calcula a autonomia energética da missão
-4. Utiliza modelos de Machine Learning (Isolation Forest, One-Class SVM) para detecção de anomalias
-5. Apresenta uma reflexão crítica sobre ética, impacto social e sustentabilidade
+2. Realiza uma **Análise Exploratória de Dados (EDA)** com pairplot, heatmap de correlação, boxplot, distribuição e visualização 3D
+3. Aplica um algoritmo de verificação pré-decolagem (**"PRONTO PARA DECOLAR"** ou **"DECOLAGEM ABORTADA"**)
+4. Calcula a autonomia energética da missão
+5. Implementa o **Isolation Forest do zero** (classes `IsolationTreeNode`, `IsolationTree`, `IsolationForest`) e compara com modelos do Scikit-learn (Isolation Forest, One-Class SVM)
+6. Apresenta uma reflexão crítica — *"Quem decide quando a máquina decide?"* — sobre ética, automação e os limites do progresso
+
+### Pipeline de Machine Learning
+
+```
+DATA LOADING & CLEANING → EDA → FEATURE ENGINEERING → DATA SPLITTING → TRAINING → VALIDATION ⇄ HYPERPARAMETER TUNING → SAVE ARTEFACT
+```
 
 ---
 
@@ -25,17 +32,17 @@ FIAP-Aurora-Siger/
 ├── Aurora_siger.ipynb   # Notebook principal com código, análises e resultados
 ├── README.md            # Este arquivo
 ├── LICENSE              # Licença do projeto
-└── assets/              # Prints de execução (screenshots)
+└── assets/
+    └── fluxograma_verificacao.png  # Fluxograma do algoritmo de verificação pré-decolagem
 ```
 
 ---
 
-## Prints da execução
+## Diagramas e prints
 
-<!-- Adicionar screenshots após execução do notebook -->
-<!-- Exemplo: ![Descrição](assets/nome-do-print.png) -->
+### Fluxograma de verificação pré-decolagem
 
-*Em breve: capturas de tela dos resultados do notebook.*
+![Fluxograma de Verificação de Decolagem](assets/fluxograma_verificacao.png)
 
 ---
 
@@ -62,7 +69,7 @@ source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
 # Instale as dependências
-pip install numpy pandas seaborn matplotlib scikit-learn jupyter
+pip install numpy pandas seaborn matplotlib scikit-learn plotly optuna jupyter
 
 # Abra o notebook
 jupyter notebook Aurora_siger.ipynb
@@ -79,6 +86,8 @@ jupyter notebook Aurora_siger.ipynb
 | Pandas | Manipulação e análise de dados tabulares |
 | Seaborn / Matplotlib | Visualização de dados |
 | Scikit-learn | Modelos de detecção de anomalias |
+| Plotly | Visualizações interativas e gráficos 3D |
+| Optuna | Otimização de hiperparâmetros |
 | Jupyter Notebook | Ambiente de desenvolvimento interativo |
 
 ---
@@ -200,11 +209,11 @@ autonomia_orbital  = (energia_útil - energia_lançamento) / consumo_orbital
 
 | Nome | RM | Contato |
 |------|----|---------|
-| Gabriel Carmona Bittencourt | | gabrielcarmonabittencourtpy@gmail.com |
-| Samuel Felipe Furtado Freire | | nekolorful@gmail.com |
+| Gabriel Carmona Bittencourt | RM569239 | gabrielcarmonabittencourtpy@gmail.com |
+| Samuel Felipe Furtado Freire | RM572777 | nekolorful@gmail.com |
 | Marcio Francisco dos Santos Junior | | marciofsantos65@gmail.com |
 | Iúri Leão de Almeida | RM570215 | iurileao@gmail.com |
-| Miguel Moreira | | miguelitomoreiraa2008@gmail.com |
+| Miguel Moreira | RM572409 | miguelitomoreiraa2008@gmail.com |
 
 ---
 
