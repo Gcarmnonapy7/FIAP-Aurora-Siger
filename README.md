@@ -211,7 +211,7 @@ autonomia_orbital  = (energia_útil - energia_lançamento) / consumo_orbital
 |------|----|---------|
 | Gabriel Carmona Bittencourt | RM569239 | gabrielcarmonabittencourtpy@gmail.com |
 | Samuel Felipe Furtado Freire | RM572777 | nekolorful@gmail.com |
-| Marcio Francisco dos Santos Junior | | marciofsantos65@gmail.com |
+| Marcio Francisco dos Santos Junior | RM570758| marciofsantos65@gmail.com |
 | Iúri Leão de Almeida | RM570215 | iurileao@gmail.com |
 | Miguel Moreira | RM572409 | miguelitomoreiraa2008@gmail.com |
 
