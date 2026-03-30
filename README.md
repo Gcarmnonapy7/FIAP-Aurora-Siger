@@ -3,25 +3,87 @@
 Sistema Inteligente de Gerenciamento de Riscos para telemetria de decolagem espacial.
 
 > Projeto desenvolvido como atividade integradora da **Fase 1** do curso de Ciência da Computação — **FIAP (2026)**.
+>
+> Repositório: [github.com/Gcarmnonapy7/FIAP-Aurora-Siger](https://github.com/Gcarmnonapy7/FIAP-Aurora-Siger)
 
 ---
 
-## Sobre o projeto
+## O que este projeto faz?
 
-O Aurora SIGER simula o monitoramento de sensores de uma estação espacial antes da decolagem. A partir de dados de telemetria — temperatura, integridade estrutural, energia, pressão e vibração — o sistema:
+Imagine que você faz parte da equipe de controle de missão de um foguete. Segundos antes da decolagem, dezenas de sensores estão transmitindo dados em tempo real: temperatura da cabine, pressão dos tanques de combustível, vibração dos motores, carga das baterias...
 
-1. Organiza e descreve os dados de telemetria
-2. Realiza uma **Análise Exploratória de Dados (EDA)** com pairplot, heatmap de correlação, boxplot, distribuição e visualização 3D
-3. Aplica um algoritmo de verificação pré-decolagem (**"PRONTO PARA DECOLAR"** ou **"DECOLAGEM ABORTADA"**)
-4. Calcula a autonomia energética da missão
-5. Implementa o **Isolation Forest do zero** (classes `IsolationTreeNode`, `IsolationTree`, `IsolationForest`) e compara com modelos do Scikit-learn (Isolation Forest, One-Class SVM)
-6. Apresenta uma reflexão crítica — *"Quem decide quando a máquina decide?"* — sobre ética, automação e os limites do progresso
+**Como saber se é seguro decolar?**
 
-### Pipeline de Machine Learning
+O Aurora SIGER responde a essa pergunta em **três etapas**:
+
+1. **Validação de telemetria** — cada sensor é comparado com sua faixa segura (por exemplo, temperatura interna entre 18°C e 26°C). Se qualquer leitura estiver fora do limite, o lançamento é abortado.
+
+2. **Verificação por Inteligência Artificial** — mesmo que todos os sensores estejam dentro da faixa, pode haver combinações sutis de valores que indicam um problema. Um modelo de **Isolation Forest** (implementado do zero!) analisa o conjunto de leituras e calcula um *anomaly score*. Se o score ultrapassar um limiar, a IA detecta a anomalia.
+
+3. **Análise energética** — a carga das baterias é suficiente para cobrir o lançamento e manter a nave em órbita? O sistema calcula a autonomia restante considerando consumo e perdas.
+
+Somente se as **três etapas** forem aprovadas, o sistema emite: **"PRONTO PARA DECOLAR"**. Caso contrário: **"DECOLAGEM ABORTADA"**.
+
+---
+
+## O que é Isolation Forest e por que usá-lo?
+
+O **Isolation Forest** é um algoritmo de detecção de anomalias. A ideia central é simples:
+
+> **Pontos anômalos são mais fáceis de isolar do que pontos normais.**
+
+O algoritmo constrói árvores binárias aleatórias. Em cada nó, ele escolhe uma feature aleatória e um ponto de corte aleatório. Dados anômalos — por serem "diferentes" da maioria — tendem a ser isolados em poucas divisões (caminho curto na árvore). Dados normais precisam de muitas divisões para serem separados (caminho longo).
+
+O **anomaly score** é derivado do comprimento médio do caminho: quanto mais curto, mais anômalo.
+
+Neste projeto, implementamos o Isolation Forest **do zero** (classes `IsolationTreeNode`, `IsolationTree`, `MyIsolationForest`) e comparamos os resultados com a implementação do Scikit-learn, para validar que a nossa versão se comporta corretamente.
+
+---
+
+## Entregáveis do projeto
+
+O notebook cobre os 6 entregáveis da atividade. Aqui está o mapeamento entre cada entregável e onde encontrá-lo:
+
+| Entregável | Descrição | Onde no notebook |
+|------------|-----------|------------------|
+| **1.1** Organização da telemetria | Geração de 100k amostras sintéticas (97k normais + 3k anomalias) com 7 sensores | Cells 3–9 |
+| **1.2** Algoritmo de verificação | Pseudocódigo em portugol + fluxograma do pipeline de 3 etapas | Cells 29–30 |
+| **1.3** Script em Python | Classe `Validator`, funções `ai_anomaly_check()`, `calculate_autonomy()` e `launch_decision()` | Cell 28 |
+| **1.4** Análise energética | Cálculo de autonomia orbital (18 kWh, perdas 14%, consumo orbital 1.2 kW) | Cell 28 + Cell 31 (ensaio) |
+| **1.5** Análise assistida por IA | Isolation Forest do zero + comparação com Scikit-learn (accuracy, precision, recall, F1, ROC AUC) | Cells 20–27 |
+| **1.6** Reflexão crítica | Ensaio *"Quem decide quando a máquina decide?"* — ética, automação e limites do progresso | Cell 32 |
+
+---
+
+## Pipeline de Machine Learning
+
+O notebook segue este fluxo, que é o ciclo clássico de um projeto de Machine Learning:
 
 ```
-DATA LOADING & CLEANING → EDA → FEATURE ENGINEERING → DATA SPLITTING → TRAINING → VALIDATION ⇄ HYPERPARAMETER TUNING → SAVE ARTEFACT
+DATA LOADING → EDA → FEATURE ENGINEERING → DATA SPLITTING → TRAINING → VALIDATION
+     ↓          ↓           ↓                    ↓              ↓           ↓
+  Gerar e    Visualizar   Normalizar       Separar 80/20    Treinar o   Comparar
+  carregar   correlações  com Standard-    com estratifi-   Isolation   métricas
+  os dados   e padrões    Scaler           cação            Forest      (scratch
+  sintéticos                                                            vs sklearn)
 ```
+
+| Etapa | O que faz | Por que é importante |
+|-------|-----------|----------------------|
+| **Data Loading** | Gerar 100k amostras sintéticas com distribuições realistas | Sem dados, não há modelo |
+| **EDA** | Heatmap, pairplot, boxplot, distribuição, scatter 3D | Entender os dados antes de modelar evita erros |
+| **Feature Engineering** | Normalizar com `StandardScaler` | O Isolation Forest é sensível à escala das features |
+| **Data Splitting** | 80% treino, 20% teste, estratificado por `anomaly` | Garante que o teste reflete a proporção real de anomalias |
+| **Training** | Ajustar o modelo aos dados de treino | O modelo aprende o que é "normal" |
+| **Validation** | Métricas: accuracy, precision, recall, F1, ROC AUC | Saber se o modelo realmente funciona |
+
+---
+
+## Fluxograma — Pipeline de decisão de lançamento
+
+O fluxograma abaixo representa o pipeline completo de decisão, com as 3 etapas (Validação de Telemetria → Verificação IA → Análise Energética):
+
+![Fluxograma de Verificação de Decolagem](assets/fluxograma_verificacao.png)
 
 ---
 
@@ -29,20 +91,16 @@ DATA LOADING & CLEANING → EDA → FEATURE ENGINEERING → DATA SPLITTING → T
 
 ```
 FIAP-Aurora-Siger/
-├── Aurora_siger.ipynb   # Notebook principal com código, análises e resultados
-├── README.md            # Este arquivo
-├── LICENSE              # Licença do projeto
+├── Aurora_siger.ipynb              # Notebook principal (código, análises e resultados)
+├── README.md                       # Este arquivo
+├── CLAUDE.md                       # Guia para assistentes de código (Claude Code)
+├── LICENSE                         # Licença do projeto
 └── assets/
-    └── fluxograma_verificacao.png  # Fluxograma do algoritmo de verificação pré-decolagem
+    ├── Aurora_siger.ipynb - Colab.pdf  # PDF com o notebook executado (todos os outputs)
+    └── fluxograma_verificacao.png      # Fluxograma do pipeline de verificação pré-decolagem
 ```
 
----
-
-## Diagramas e prints
-
-### Fluxograma de verificação pré-decolagem
-
-![Fluxograma de Verificação de Decolagem](assets/fluxograma_verificacao.png)
+> **Dica:** Se quiser ver os resultados sem executar o notebook, consulte o [PDF com todas as saídas](assets/Aurora_siger.ipynb%20-%20Colab.pdf).
 
 ---
 
@@ -55,6 +113,8 @@ FIAP-Aurora-Siger/
    [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Gcarmnonapy7/FIAP-Aurora-Siger/blob/main/Aurora_siger.ipynb)
 
 2. Execute todas as células em sequência (`Runtime` → `Run all`)
+
+> **Nota:** As células devem ser executadas em ordem — células posteriores dependem de variáveis criadas nas anteriores.
 
 ### Opção 2 — Localmente
 
@@ -69,7 +129,7 @@ source venv/bin/activate  # Linux/Mac
 # venv\Scripts\activate   # Windows
 
 # Instale as dependências
-pip install numpy pandas seaborn matplotlib scikit-learn plotly optuna jupyter
+pip install numpy pandas seaborn matplotlib scikit-learn plotly jupyter
 
 # Abra o notebook
 jupyter notebook Aurora_siger.ipynb
@@ -82,22 +142,41 @@ jupyter notebook Aurora_siger.ipynb
 | Tecnologia | Uso no projeto |
 |------------|----------------|
 | Python 3 | Linguagem principal |
-| NumPy | Geração de dados e operações numéricas |
-| Pandas | Manipulação e análise de dados tabulares |
-| Seaborn / Matplotlib | Visualização de dados |
-| Scikit-learn | Modelos de detecção de anomalias |
-| Plotly | Visualizações interativas e gráficos 3D |
-| Optuna | Otimização de hiperparâmetros |
-| Jupyter Notebook | Ambiente de desenvolvimento interativo |
+| NumPy | Geração de dados sintéticos e operações vetorizadas |
+| Pandas | Manipulação de DataFrames (tabelas de dados) |
+| Seaborn / Matplotlib | Gráficos estáticos (heatmap, boxplot, histogramas, barras) |
+| Plotly | Gráficos interativos (scatter 3D com zoom e rotação) |
+| Scikit-learn | Isolation Forest de referência, métricas, `StandardScaler`, `train_test_split` |
+| Jupyter Notebook | Ambiente interativo que combina código, visualizações e texto |
 
 ---
 
-## Parâmetros de telemetria
+## Faixas seguras de telemetria
 
-Os dados sintéticos foram calibrados com base em referências reais de estações espaciais e veículos de lançamento:
+Para decidir se é seguro decolar, cada sensor é comparado com uma **faixa segura**. Se qualquer leitura estiver fora da sua faixa, o sistema aborta o lançamento:
 
-| Coluna | μ | σ | Unidade | Referência | Comentário |
-|--------|---|---|---------|------------|------------|
+| Sensor | Faixa segura | O que acontece se estiver fora |
+|--------|-------------|-------------------------------|
+| `internal_temp` | 18–26 °C | Temperatura da cabine perigosa para a tripulação |
+| `external_temp` | -65–125 °C | Exposição térmica extrema na fuselagem |
+| `structural_integrity` | 1 (íntegro) | Falha estrutural detectada |
+| `energy` | 60–100 % | Carga insuficiente para operação |
+| `vibration` | 0.1–0.5 g | Vibração anormal nos motores |
+| `tank_pressure` | 270–340 atm | Pressão de combustível fora do seguro |
+| `critical_modules` | 1 (ativo) | Módulo essencial inoperante |
+
+> **Nota:** Além desta validação por regras, existe um segundo check de `energy ≥ 95%` na **análise energética** (Etapa 3 do pipeline). Os 60% são o mínimo operacional; os 95% são o limiar Go/No-Go para lançamento.
+
+---
+
+## Geração dos dados sintéticos
+
+Os dados sintéticos foram calibrados com base em referências reais de estações espaciais e veículos de lançamento. O dataset tem **100.000 amostras**: 97.000 normais e 3.000 anomalias (3%).
+
+**Dados normais** — distribuições centradas nos valores típicos de operação:
+
+| Coluna | μ (média) | σ (desvio) | Unidade | Referência | Comentário |
+|--------|-----------|------------|---------|------------|------------|
 | `internal_temp` | 22 | 1.5 | °C | ISS: 18–26°C, avg 21–23°C | Ambiente pressurizado com controle térmico ativo |
 | `external_temp` | 10 | 8 | °C | LEO: -65°C a +125°C | Variação extrema entre face solar e sombra da nave |
 | `structural_integrity` | — | — | 0/1 | 1 = íntegro, 0 = falha | Bernoulli(1 - failure_prob): degrada com pressão alta |
@@ -105,6 +184,17 @@ Os dados sintéticos foram calibrados com base em referências reais de estaçõ
 | `vibration` | 0.3 | 0.1 | g | Pré-decolagem: ~0.1–0.5g | Vibrações residuais dos motores em pré-ignição |
 | `tank_pressure` | 305 | 15 | atm | LOX/LH2 pump-fed: 270–340 atm | Pressurização dos tanques criogênicos de LOX/LH2 |
 | `critical_modules` | — | — | 0/1 | 1 = ativo, 0 = inativo | Bernoulli(1 - failure_prob): degrada com pressão alta |
+
+**Dados anômalos** — distribuições deslocadas para simular falhas reais:
+
+| Coluna | Diferença em relação ao normal | Motivo |
+|--------|-------------------------------|--------|
+| `internal_temp` | Bimodal: ~35°C ou ~5°C | Falha no controle térmico (superaquecimento ou congelamento) |
+| `external_temp` | μ=60, σ=20 | Exposição solar prolongada sem rotação da nave |
+| `energy` | μ=40, σ=15 | Baterias parcialmente descarregadas |
+| `vibration` | μ=1.2, σ=0.4 | Vibração excessiva nos motores |
+| `tank_pressure` | μ=360, σ=25 | Sobrepressurização dos tanques |
+| `structural_integrity` / `critical_modules` | Probabilidade de falha muito maior | Correlacionados com sobrepressurização via função sigmoide |
 
 ### Fontes — Telemetria
 
