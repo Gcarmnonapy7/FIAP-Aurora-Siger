@@ -307,6 +307,34 @@ autonomia_orbital  = (energia_útil - energia_lançamento) / consumo_orbital
 
 ---
 
+## Imagens de execução
+
+### DataFrame gerado
+![DataFrame](assets/data_frame.png)
+
+### Heatmap de correlações
+![Heatmap](assets/heatmap_plot.png)
+
+### Pairplot dos dados
+![Pairplot](assets/pairplot_data.png)
+
+### Scatter 3D
+![Scatter 3D](assets/newplot.png)
+
+### Isolation Forest — distribuição de scores
+![Isolation Forest Score Distribution](assets/isolation_forest.png)
+
+### Modelo implementado do zero
+![Scratch Model](assets/scratch_model.png)
+
+### Comparação sklearn vs implementação própria
+![Sklearn vs Scratch](assets/sklearn_vs_scratch.png)
+
+### Validação de amostras
+![Samples](assets/samples.png)
+
+---
+
 ## Licença
 
 Distribuído sob a licença MIT. Veja [LICENSE](LICENSE) para mais detalhes.
